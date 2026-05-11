@@ -102,20 +102,20 @@ Subagents run in isolated context windows via `.claude/agents/`. They don't poll
 |------|------|------|
 | SessionStart | On startup/resume | QMD re-index, inject North Star, active work, recent changes, tasks, file listing |
 | UserPromptSubmit | Every message | Classify content (decision, incident, 1:1, win, architecture, person, project update) and inject routing hints |
-| PreToolUse (Write/Edit) | Before file writes | Validate frontmatter, check for wikilinks, verify folder placement |
+| PostToolUse | After writing `.md` | Validates frontmatter, checks for wikilinks |
 | PreCompact | Before context compaction | Back up session transcript to `thinking/session-logs/` |
 | Stop | End of session | Checklist: archive, update indexes, check orphans |
 
 ## Semantic Search (QMD)
 
-If QMD is installed (`npm install -g @tobilu/qmd`), the vault has semantic search:
+If QMD is installed (`npm install -g @tobilu/qmd`), the vault has semantic search. Every command takes `--index <name>` where `<name>` is `vault-manifest.json`'s `qmd_index` field (default: `obsidian-mind`):
 
-- `qmd query "..."` — hybrid BM25 + vector + LLM reranking (best quality)
-- `qmd search "..."` — fast BM25 keyword search
-- `qmd vsearch "..."` — semantic vector search (exploratory)
-- `qmd update && qmd embed` — refresh index after bulk changes
+- `qmd --index <name> query "..."` — hybrid BM25 + vector + LLM reranking (best quality)
+- `qmd --index <name> search "..."` — fast BM25 keyword search
+- `qmd --index <name> vsearch "..."` — semantic vector search (exploratory)
+- `qmd --index <name> update && qmd --index <name> embed` — refresh index after bulk changes
 
-SessionStart hook runs `qmd update` automatically. See `.claude/skills/qmd/SKILL.md` for full reference.
+SessionStart hook runs `qmd --index <name> update` automatically, reading the index name from the manifest. First-time setup on a fresh clone: `node --experimental-strip-types scripts/qmd-bootstrap.ts`. See `.claude/skills/qmd/SKILL.md` for full reference, and [[Memories]] for the topics QMD is most often asked to find across the vault.
 
 ## Workflow: Weekly Review
 

@@ -1,5 +1,67 @@
 # Changelog
 
+
+
+
+
+
+## v6.0 — 2026-04-26
+
+### Added
+- install via ShardMind — wizard setup, modules, safe upgrades
+
+### Changed
+- mkdir + cd before shardmind install
+- use github: prefix in shardmind install / adopt commands
+
+### Fixed
+- bump shard.yaml version on release
+
+### Added
+- install via ShardMind — wizard setup, modules, safe upgrades
+
+### Changed
+- use github: prefix in shardmind install / adopt commands
+
+## v5.1 — 2026-04-19
+
+### Added
+- ARCHITECTURE.md, Obsidian-QMD ignore sync, lib cleanup, MCP-first
+- keep QMD index fresh mid-session via detached hooks
+- per-vault QMD named index, manifest-driven context, bootstrap
+
+### Fixed
+- resolve qmd MCP failure on Windows via Node wrapper
+- add .claude/scripts/.gitignore to block accidental node_modules commits
+
+## v5.0 — 2026-04-17
+
+### Added
+- register QMD as MCP and teach Claude to consult brain topics via QMD
+- inject brain topic index with empty-stub markers in SessionStart
+
+### Changed
+- migrate hook and tooling layer from Python to TypeScript (v5)
+- add roadmap section to translated READMEs (ja, ko, zh-CN)
+- require issue-first for bigger contributions
+- add roadmap section with Python to TypeScript migration notice
+- Merge docs/upgrade-guide: upgrade guide, quick start, release improvements
+- add upgrade guide and update quick start for multi-agent
+
+### Fixed
+- close manifest coverage gaps and prepare v5.0 release metadata
+- make hook commands cwd-independent via ${*_PROJECT_DIR:-.}
+
+## v4.0 — 2026-04-09
+
+### Changed
+- Merge feat/multi-agent-support: add Codex CLI and Gemini CLI support
+
+## v3.8 — 2026-04-09
+
+### Fixed
+- correct hook docs and add token efficiency section
+
 ## v3.7 — 2026-04-08
 
 ### Added

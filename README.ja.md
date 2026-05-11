@@ -3,11 +3,20 @@
 > [!NOTE]
 > この翻訳はAIの支援を受けて作成されました。不自然な表現や誤訳がありましたら、ぜひIssueやPull Requestでお知らせください。コミュニティからの修正を歓迎します。
 
-# 🧠 Obsidian Mind
+<p align="center">
+  <img src="obsidian-mind-logo.png" alt="Obsidian Mind" width="120">
+</p>
 
-[![Claude Code](https://img.shields.io/badge/claude%20code-required-D97706)](https://docs.anthropic.com/en/docs/claude-code)
+<h1 align="center">Obsidian Mind</h1>
+
+[![Claude Code](https://img.shields.io/badge/claude%20code-full%20support-D97706)](https://docs.anthropic.com/en/docs/claude-code)
+[![Codex CLI](https://img.shields.io/badge/codex%20cli-hooks%20%2B%20commands-10A37F)](https://github.com/openai/codex)
+[![Gemini CLI](https://img.shields.io/badge/gemini%20cli-hooks%20%2B%20commands-4285F4)](https://github.com/google-gemini/gemini-cli)
 [![Obsidian](https://img.shields.io/badge/obsidian-1.12%2B-7C3AED)](https://obsidian.md)
-[![Python](https://img.shields.io/badge/python-3.8%2B-3776AB)](https://python.org)
+[![Obsidian CLI](https://img.shields.io/badge/obsidian--cli-integrated-E6E6E6)](https://github.com/kepano/obsidian-cli)
+[![Obsidian Skills](https://img.shields.io/badge/obsidian--skills-integrated-8B5CF6)](https://github.com/kepano/obsidian-skills)
+[![QMD](https://img.shields.io/badge/qmd-semantic%20search-FF6B6B)](https://github.com/tobi/qmd)
+[![Node](https://img.shields.io/badge/node-22%2B-339933)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > **Claude Codeにすべてを記憶させるObsidianボールト。** セッションを開始して、日々のことを話すだけ — ノート、リンク、インデックス、パフォーマンス管理はClaudeが自動で処理します。すべての会話が前回の続きとして積み重なっていきます。
@@ -16,19 +25,21 @@
 
 ## 🔴 課題
 
-Claude Codeは強力ですが、忘れてしまいます。毎回のセッションがゼロからの出発 — あなたの目標、チーム、パターン、実績に関するコンテキストがありません。同じことを何度も説明し直し、3回前の会話で下した決定が失われます。知識が蓄積されないのです。
+AIコーディングエージェントは強力ですが、忘れてしまいます。毎回のセッションがゼロからの出発 — あなたの目標、チーム、パターン、実績に関するコンテキストがありません。同じことを何度も説明し直し、3回前の会話で下した決定が失われます。知識が蓄積されないのです。
 
 ## 🟢 解決策
 
-Claudeに脳を与えましょう。
+エージェントに脳を与えましょう。
 
 ```
 あなた: "セッション開始"
-Claude: *North Starを読み、アクティブなプロジェクトを確認し、最近の記憶をスキャン*
-Claude: "Project Alphaに取り組んでいますね。BEコントラクトでブロック中です。
-         前回のセッションでコーディネーターを分割することに決めましたね。
-         明日マネージャーとの1on1があります — レビューブリーフは準備完了です。"
+エージェント: *North Starを読み、アクティブなプロジェクトを確認し、最近の記憶をスキャン*
+エージェント: "Project Alphaに取り組んでいますね。BEコントラクトでブロック中です。
+              前回のセッションでコーディネーターを分割することに決めましたね。
+              明日マネージャーとの1on1があります — レビューブリーフは準備完了です。"
 ```
+
+`shardmind install` または `git clone` でインストール — どちらも同じボールトです。
 
 ---
 
@@ -87,26 +98,52 @@ Decision: defer Redis migration. Win: Sarah praised the auth architecture.
 
 ## 🚀 クイックスタート
 
-1. このリポジトリをクローン（または**GitHubテンプレート**として使用）
-2. フォルダを**Obsidianボールト**として開く
-3. 設定 → 一般で**Obsidian CLI**を有効化（Obsidian 1.12以上が必要）
-4. ボールトディレクトリで**`claude`**を実行
-5. **`brain/North Star.md`**に目標を記入 — これがすべてのセッションの基盤になります
-6. 仕事について話し始める
+### 📦 ShardMindでインストール（推奨）
 
-### オプション：QMDセマンティック検索
+```bash
+npm install -g shardmind
+mkdir my-vault && cd my-vault
+shardmind install github:breferrari/obsidian-mind
+```
+
+`shardmind install` はカレントディレクトリに書き込むため、先に新しいフォルダを作成して移動してください。ウィザードがあなたの名前、組織、ボールトの目的、含めるエージェント、QMDを有効化するかどうかを収集します。post-installフックがあなたの回答に基づいて`brain/North Star.md`をパーソナライズします。その後：
+
+1. インストールされたフォルダを**Obsidianボールト**として開く
+2. 設定 → 一般で**Obsidian CLI**を有効化（Obsidian 1.12以上が必要）
+3. ボールトディレクトリでエージェントを実行：**`claude`**、**`codex`**、または**`gemini`**
+4. 仕事について話し始める
+
+[ShardMind](https://github.com/breferrari/shardmind)はObsidianボールトテンプレートのパッケージマネージャーです。インストール時に`.shardmind/`サイドカーが追加され、ウィザード、オプションのモジュール（不要なものはスキップ可能）、3-wayマージのアップグレードを実現します。すべての値がデフォルトの場合、インストール結果は`git clone`とバイト等価 — クローン体験はそのまま保たれます。インストール済みボールトから`.shardmind/`と`shard-values.yaml`を削除しても動作し続けます：ShardMindは追加機能であり、必須ではありません。
+
+### または直接クローン
+
+```bash
+git clone https://github.com/breferrari/obsidian-mind.git
+```
+
+または**GitHubテンプレート**として使用。ウィザードをスキップし、素のテンプレートを取得します。その後、上記の4ステップを実行し、加えて**`brain/North Star.md`**に目標を記入してください（ShardMindウィザードを使えば自動で行われます）。
+
+### 🔍 推奨：QMDセマンティック検索
 
 ボールト全体のセマンティック検索（ノートのタイトルが「Redis Migration ADR」でも「キャッシュについて何を決めた？」で見つかる）：
 
 ```bash
 npm install -g @tobilu/qmd
-qmd collection add . --name vault --mask "**/*.md"
-qmd context add qmd://vault "Engineer's work vault: projects, decisions, incidents, people, reviews, architecture"
-qmd update && qmd embed
+node --experimental-strip-types scripts/qmd-bootstrap.ts
 ```
 
+ブートストラップは冪等で、再実行しても安全です。`vault-manifest.json` の `qmd_index` と `qmd_context` フィールドを読み取り、名前付きインデックスを登録してエンベディングを生成します（デフォルトのインデックス名は `obsidian-mind`）。SessionStart フック、`.mcp.json` のラッパー、CLI コマンドはすべて同じマニフェストフィールドを参照するため、同一マシン上の他のボールトと QMD データが混ざりません。CLI 実行時は常に `--index <名前>` を渡してください:
+
+```bash
+qmd --index obsidian-mind query "キャッシュについて何を決めた？"
+qmd --index obsidian-mind update   # 一括編集後
+qmd --index obsidian-mind embed    # 多数の新規ノート後
+```
+
+**MCPによるネイティブなエージェントツール。** `.mcp.json`に[Model Context Protocol](https://modelcontextprotocol.io)サーバーとして登録されています — QMDがインストールされていれば、`mcp__qmd__query`、`mcp__qmd__get`、`mcp__qmd__multi_get`がReadやEditと並んでエージェントのツールメニューに表示されます。サブエージェント、スラッシュコマンド、メイン会話はすべて同じ型付きコントラクトを呼び出します。後から別のMCP対応ツール（データベース、チケット管理、カレンダー）を追加しても、同じ方法でプラグインできます。
+
 > [!NOTE]
-> QMDがインストールされていなくても、すべて動作します — ClaudeはObsidian CLIとgrepにフォールバックします。
+> QMDがインストールされていなくても、すべて動作します — エージェントはObsidian CLIとgrepにフォールバックし、MCPサーバーのエントリは無害な警告とともにスキップされます。
 
 ---
 
@@ -114,44 +151,77 @@ qmd update && qmd embed
 
 - [Obsidian](https://obsidian.md) 1.12以上（CLIサポートのため）
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
-- Python 3（フックスクリプト用）
+- [Node 22+ LTS](https://nodejs.org)（フックスクリプト用 — Claude Code / Codex / Gemini CLI と一緒に通常インストール済み）
 - Git（バージョン履歴用）
 - [QMD](https://github.com/tobi/qmd)（オプション、セマンティック検索用）
+
+> **Node フラグについて。** フックスクリプトは Node の `--experimental-strip-types` フラグで TypeScript を直接実行します。このフラグは Node 22.6+（2024年8月）で安定し、Node 23.6+ ではデフォルトの動作になりました。実験的扱いではあるものの 22 LTS と 24 LTS で挙動は変わっていません。将来の Node リリースでフラグが廃止・改名された場合、`.claude/settings.json`、`.codex/hooks.json`、`.gemini/settings.json` のフックコマンドを1行修正する必要があります。
 
 ---
 
 ## ⚙️ 仕組み
 
-**フォルダは目的別にグループ化。リンクは意味別にグループ化。** ノートは1つのフォルダ（その居場所）に存在しますが、多くのノート（そのコンテキスト）にリンクします。Claudeがこのグラフを維持し、作業ノートを人物、意思決定、コンピテンシーに自動的にリンクします。レビューシーズンが来たとき、各コンピテンシーノートのバックリンクがそのままエビデンスの軌跡になっています。リンクのないノートはバグです。
+**手続き的コードが環境を所有し、エージェントがコンテンツを所有します。** `.claude/scripts/`のフックが分類、検証、インデックス作成、ライフサイクル注入を処理します — 決定論的で、テスト可能で、どのエージェントでも同じように動作します。ノートを書き、配置し、リンクし、ブリーフを作成する — それらは判断であり、エージェントに委ねられます。両者は小さなハンドオフで出会い（フックがコンテキストを注入し、エージェントがボールトを読む）、どちらも相手の仕事をする必要はありません。
+
+**フォルダは目的別にグループ化。リンクは意味別にグループ化。** ノートは1つのフォルダ（その居場所）に存在しますが、多くのノート（そのコンテキスト）にリンクします。エージェントがこのグラフを維持し、作業ノートを人物、意思決定、コンピテンシーに自動的にリンクします。レビューシーズンが来たとき、各コンピテンシーノートのバックリンクがそのままエビデンスの軌跡になっています。リンクのないノートはバグです。
 
 **ボールトファーストのメモリ**がセッション間・マシン間でコンテキストを保持します。永続的な知識はすべて`brain/`のトピックノート（git管理、Obsidianで閲覧可能、リンク付き）に保存されます。Claude Codeの`MEMORY.md`（`~/.claude/`）はボールト内の場所を指す自動読み込みインデックスであり、ストレージそのものではありません。これにより、記憶はマシン変更後も生き残り、グラフの一部として機能します。
 
 **セッションには設計されたライフサイクルがあります。** `SessionStart`フックが自動的にNorth Starの目標、アクティブプロジェクト、最近の変更、未完了タスク、ボールト全体のファイル一覧を注入します — Claudeは白紙からではなく、コンテキストを持ってセッションを開始します。終了時に「wrap up」と言えば、Claudeが`/om-wrap-up`を実行 — ノートの検証、インデックスの更新、記録漏れの実績の発見を行います。285行の`CLAUDE.md`がその間のすべてを統制します：ファイルの配置場所、リンクの仕方、ノートの分割タイミング、意思決定やインシデントの扱い方。
 
-### フック
+### 🔗 フック
 
 5つのライフサイクルフックが自動的にルーティングを処理します：
 
 | フック | タイミング | 内容 |
 |------|------|------|
 | 🚀 SessionStart | 起動/再開時 | QMD再インデックス、North Star・アクティブプロジェクト・最近の変更・タスク・ファイル一覧を注入 |
-| 💬 UserPromptSubmit | 全メッセージ | コンテンツを分類（意思決定、インシデント、実績、1on1、アーキテクチャ、人物）してルーティングヒントを注入 |
-| ✍️ PostToolUse | `.md`書き込み後 | フロントマターの検証、ウィキリンクの確認、フォルダ配置の検証 |
+| 💬 UserPromptSubmit | 全メッセージ | コンテンツを分類（意思決定、インシデント、実績、1on1、アーキテクチャ、人物、プロジェクト更新）してルーティングヒントを注入 |
+| ✍️ PostToolUse | `.md`書き込み後 | フロントマターの検証、ウィキリンクの確認 |
 | 💾 PreCompact | コンテキスト圧縮前 | セッション記録を`thinking/session-logs/`にバックアップ |
 | 🏁 Stop | セッション終了時 | チェックリスト：完了プロジェクトのアーカイブ、インデックス更新、孤立ノートの確認 |
 
 > [!TIP]
 > ただ話すだけ。フックがルーティングを処理します。
 
+### ⚡ トークン効率
+
+obsidian-mindはボールト全体をコンテキストに読み込み**ません**。階層型ローディングでトークンコストを抑えます：
+
+| 階層 | 内容 | タイミング | コスト |
+|------|------|------------|--------|
+| **常時** | `CLAUDE.md` + SessionStartコンテキスト（North Star抜粋、git概要、タスク、ボールトファイル一覧） | セッション開始時 | ~2Kトークン |
+| **オンデマンド** | QMDセマンティック検索結果 | エージェントが特定のコンテキストを必要とした時 | 対象のみ |
+| **トリガー** | 分類ルーティングヒント | 毎メッセージ | ~100トークン |
+| **トリガー** | PostToolUse検証 | `.md`書き込み後 | ~200トークン |
+| **まれ** | ファイル全体の読み込み | 明示的に必要な場合のみ | 可変 |
+
+SessionStartは**軽量なコンテキスト**を読み込みます — 主要ファイルからの短い抜粋、ファイル名、git概要のみで、ノート全体は読み込みません。エージェントはQMDで意味検索してからファイルを読むため、関連する情報のみを取得します。分類フックはメッセージごとに軽量なNode呼び出し1回です。検証フックはMarkdown書き込み時のみ発火し、除外パスはスキップします。
+
+### 🌐 他のエージェントでの利用
+
+obsidian-mindはClaude Code、Codex CLI、Gemini CLIで動作します。`CLAUDE.md`のボールト規約、`.claude/scripts/`のフックスクリプト、`.claude/commands/`の18コマンドはすべてエージェント非依存です — 純粋なMarkdown、TypeScript、シェルでSDK依存はありません。
+
+**Claude Code** — フルサポート。フック、コマンド、サブエージェント、メモリシステムがすべてそのまま動作します。
+
+**Codex CLI** — `AGENTS.md`をネイティブに読み込みます。`.codex/hooks.json`のフック設定がClaude Codeと同じフックスクリプトを接続 — セッションコンテキスト、メッセージ分類、書き込み検証が自動的に動作します。
+
+**Gemini CLI** — `GEMINI.md`をネイティブに読み込みます。`.gemini/settings.json`のフック設定がGeminiのイベント名を共有フックスクリプトにマッピングします。
+
+**その他のエージェント**（Cursor、Windsurf、GitHub Copilot、JetBrains AI）— `AGENTS.md`でボールト規約を読み取ります。フックサポートはエージェントにより異なります。
+
+> [!NOTE]
+> フック、コマンド、サブエージェントプロンプト、ボールトメモリ（`brain/`）はすべてエージェント非依存です。`~/.claude/`の自動メモリローダーのみがClaude Code専用です。詳細は`AGENTS.md`をご覧ください。
+
 ---
 
 ## 📅 日常ワークフロー
 
-**朝**: `/om-standup`を実行。ClaudeがNorth Star、アクティブプロジェクト、未完了タスク、最近の変更を読み込みます。構造化されたサマリーと優先度の提案が表示されます。
+**朝**: `/om-standup`を実行。エージェントがNorth Star、アクティブプロジェクト、未完了タスク、最近の変更を読み込みます。構造化されたサマリーと優先度の提案が表示されます。
 
-**日中**: 自然に話しましょう。下した決定、発生したインシデント、終わったばかりの1on1、覚えておきたい実績を伝えてください。分類フックがClaudeに各情報を正しく整理するよう促します。まとめてダンプしたい場合は`/om-dump`を使い、すべてを一度に語ってください。
+**日中**: 自然に話しましょう。下した決定、発生したインシデント、終わったばかりの1on1、覚えておきたい実績を伝えてください。分類フックがエージェントに各情報を正しく整理するよう促します。まとめてダンプしたい場合は`/om-dump`を使い、すべてを一度に語ってください。
 
-**終業時**: 「wrap up」と言えば、Claudeが`/om-wrap-up`を呼び出します — ノートの検証、インデックスの更新、リンクの確認、記録漏れの実績の発見を行います。
+**終業時**: 「wrap up」と言えば、エージェントが`/om-wrap-up`を呼び出します — ノートの検証、インデックスの更新、リンクの確認、記録漏れの実績の発見を行います。
 
 **週次**: `/om-weekly`を実行してセッション横断の振り返り — North Starとの整合性確認、パターンの発見、記録漏れの実績、翌週の優先事項。`/om-vault-audit`を実行して孤立ノート、壊れたリンク、古くなったコンテンツを検出します。
 
@@ -166,7 +236,7 @@ qmd update && qmd embed
 | コマンド | 機能 |
 |---------|------|
 | `/om-standup` | 朝のキックオフ — コンテキスト読み込み、前日の振り返り、タスクの表示、優先度の提案 |
-| `/om-dump` | フリーフォームキャプチャ — 何でも自然に話せば、Claudeが適切なノートに振り分け |
+| `/om-dump` | フリーフォームキャプチャ — 何でも自然に話せば、適切なノートに振り分け |
 | `/om-wrap-up` | セッション全体のレビュー — ノート、インデックス、リンクの検証、改善点の提案 |
 | `/om-humanize` | 文体の調整 — Claudeが書いたテキストをあなたが書いたように修正 |
 | `/om-weekly` | 週次振り返り — セッション横断のパターン、North Starとの整合性、記録漏れの実績 |
@@ -245,8 +315,11 @@ qmd update && qmd embed
 
 ```
 Home.md                 ボールトのエントリーポイント — 埋め込みBaseビュー、クイックリンク
-CLAUDE.md               運用マニュアル — Claudeが毎セッション読み込み
+CLAUDE.md               運用マニュアル — エージェントが毎セッション読み込み
+AGENTS.md               マルチエージェントガイド — Codex、Cursor、Windsurf等
+GEMINI.md               マルチエージェントガイド — Gemini CLI
 vault-manifest.json     テンプレートメタデータ — バージョン、構造、スキーマ
+.shardmindignore        `shardmind install` から除外されるファイル（CONTRIBUTING、翻訳、マーケティング素材）
 CHANGELOG.md            バージョン履歴
 CONTRIBUTING.md         テンプレート開発チェックリスト
 README.md               プロダクトドキュメント
@@ -288,10 +361,18 @@ templates/              YAMLフロントマター付きObsidianテンプレー�
 .claude/
   commands/             18個のスラッシュコマンド
   agents/               9個のサブエージェント
-  scripts/              フックスクリプト + charcount.shユーティリティ
+  scripts/              フックスクリプト + charcount.tsユーティリティ
   skills/               Obsidian + QMDスキル
   settings.json         5つのフック設定
+
+.shardmind/             ShardMindサイドカー — `shardmind install`でインストールした場合のみ使用
+  shard.yaml            マニフェスト（名前、バージョン、モジュール、フック）
+  shard-schema.yaml     ウィザードの値 + モジュールゲーティング
+  hooks/                post-install（QMDブートストラップ + パーソナライズ）、post-update
 ```
+
+> [!NOTE]
+> `.shardmind/`は**追加機能であり、必須ではありません。** クローンして開くボールトはこれを読み込みません。`shardmind` CLIだけが読み込みます。削除してもボールトは動作し続けます。v6レイアウト契約は[shardmind/docs/SHARD-LAYOUT.md](https://github.com/breferrari/shardmind/blob/main/docs/SHARD-LAYOUT.md)を参照してください。
 
 ---
 
@@ -310,7 +391,7 @@ YAMLフロントマター付きテンプレート。段階的開示のための`
 
 ## 🔧 同梱内容
 
-### Obsidianスキル
+### 🧩 Obsidianスキル
 
 [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills)が`.claude/skills/`にプリインストール済み：
 
@@ -320,7 +401,7 @@ YAMLフロントマター付きテンプレート。段階的開示のための`
 - **json-canvas** — ビジュアル`.canvas`ファイル作成
 - **defuddle** — WebページからMarkdownへの変換
 
-### QMDスキル
+### 🔍 QMDスキル
 
 `.claude/skills/qmd/`にあるカスタムスキル。Claudeに[QMD](https://github.com/tobi/qmd)セマンティック検索を積極的に活用するよう教えます — ファイルを読む前、ノートを作成する前（重複チェック）、ノートを作成した後（リンクすべき関連コンテンツの発見）に使用します。
 
@@ -340,27 +421,73 @@ YAMLフロントマター付きテンプレート。段階的開示のための`
 | あなたのドメイン | フォルダの追加、`.claude/agents/`へのサブエージェント追加、`.claude/scripts/`への分類ルール追加 |
 
 > [!IMPORTANT]
-> `CLAUDE.md`は運用マニュアルです。規約を変更したら更新してください — Claudeは毎セッション読み込みます。
+> `CLAUDE.md`は運用マニュアルです。規約を変更したら更新してください — エージェントは毎セッション読み込みます。
 
 ---
 
 ## 🔄 アップグレード
 
-obsidian-mindの古いバージョン（または任意のObsidianボールト）をお使いですか？`/om-vault-upgrade`コマンドでコンテンツを最新テンプレートに移行できます：
+### エージェントに頼む
+
+一番簡単な方法 — エージェントに伝えるだけ：
+
+```
+このボールトを最新のobsidian-mindに更新して https://github.com/breferrari/obsidian-mind
+```
+
+エージェントが最新の変更を取得し、コンフリクトを解消し、インフラファイルを更新します。Claude Code、Codex CLI、Gemini CLIで動作します。
+
+### 既存クローンの更新
+
+リポジトリを直接クローンした場合：
+
+```bash
+cd your-vault
+git pull origin main
+```
+
+新しいファイル（`AGENTS.md`、`GEMINI.md`、`.codex/`、`.gemini/`）が自動的に追加され、フックスクリプトも更新されます。
+
+### フォークの更新
+
+リポジトリをフォークした場合：
+
+```bash
+git remote add upstream https://github.com/breferrari/obsidian-mind.git
+git fetch upstream
+git merge upstream/main
+```
+
+カスタマイズしたファイル（通常は`CLAUDE.md`、`brain/`ノート）のコンフリクトを解消してください。インフラファイル（`.claude/scripts/`、`.codex/`、`.gemini/`）はクリーンにマージされます。
+
+### 既存のクローンをShardMindに取り込む（v5.x → v6）
+
+すでにobsidian-mindをクローンしていて、カスタマイズを失わずにウィザード、オプションのモジュール、3-wayマージのアップグレードが欲しい？`shardmind adopt`が既存のボールトを管理されたv6インストールへと整合させます — あなたの編集を1バイトも失わず、`.shardmind/`サイドカーと`shard-values.yaml`を追加するだけです：
+
+```bash
+npm install -g shardmind
+shardmind adopt github:breferrari/obsidian-mind
+```
+
+2-way diffのUIがローカルの変更箇所を案内し、ファイルごとに何を残すか確認した上で、エンジンのメタデータを書き込みます。結果：既存のコンテンツが無傷のままのv6管理ボールトが手に入り、以降は`shardmind update`が使えます。再クローン不要。
+
+### 古いボールトからの移行（またはその他のボールト）
+
+v5以前のobsidian-mindを使っている、または全く別のObsidianボールトから移行したい？`/om-vault-upgrade`コマンドがコンテンツを最新テンプレートに移行します：
 
 ```bash
 # 1. 最新のobsidian-mindをクローン
 git clone https://github.com/breferrari/obsidian-mind.git ~/new-vault
 
-# 2. Claude Codeで開く
-cd ~/new-vault && claude
+# 2. エージェントで開く
+cd ~/new-vault && claude   # または codex、gemini
 
 # 3. 古いボールトを指定してアップグレードを実行
 /om-vault-upgrade ~/my-old-vault
 ```
 
-Claudeが以下を行います：
-1. **検出** — ボールトのバージョンを特定（v1〜v3.2、またはobsidian-mind以外のボールトとして識別）
+エージェントが以下を行います：
+1. **検出** — ボールトのバージョンを特定（v1〜v3.x、またはobsidian-mind以外のボールトとして識別）
 2. **棚卸し** — すべてのファイルを分類（ユーザーコンテンツ、スキャフォールド、インフラ、未分類）
 3. **移行プランの提示** — コピー、変換、スキップされるものを正確に確認できます
 4. **承認後に実行** — フロントマターの変換、ウィキリンクの修正、インデックスの再構築
@@ -369,7 +496,13 @@ Claudeが以下を行います：
 古いボールトは**一切変更されません**。`--dry-run`を使えば、実行せずにプランだけをプレビューできます。
 
 > [!NOTE]
-> obsidian-mindだけでなく、あらゆるObsidianボールトで動作します。obsidian-mind以外のボールトの場合、Claudeは各ノートを読んで意味的に分類し、作業ノート、人物、インシデント、1on1、意思決定を適切なフォルダに振り分けます。
+> obsidian-mindだけでなく、あらゆるObsidianボールトで動作します。obsidian-mind以外のボールトの場合、エージェントは各ノートを読んで意味的に分類し、作業ノート、人物、インシデント、1on1、意思決定を適切なフォルダに振り分けます。
+
+---
+
+## 🗺️ ロードマップ
+
+**コントリビューションは歓迎です。** 1ファイルを超える変更については、まずIssueを開いてください。特にフック、インストール手順、必要な環境に関わる変更については必須です。マージできないものを作る手間を省けます。
 
 ---
 

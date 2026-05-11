@@ -3,11 +3,20 @@
 > [!NOTE]
 > 本翻译在AI辅助下完成。如果您发现不自然的表达或翻译错误，欢迎通过Issue或Pull Request告知我们。我们非常欢迎社区的修正和贡献。
 
-# 🧠 Obsidian Mind
+<p align="center">
+  <img src="obsidian-mind-logo.png" alt="Obsidian Mind" width="120">
+</p>
 
-[![Claude Code](https://img.shields.io/badge/claude%20code-required-D97706)](https://docs.anthropic.com/en/docs/claude-code)
+<h1 align="center">Obsidian Mind</h1>
+
+[![Claude Code](https://img.shields.io/badge/claude%20code-full%20support-D97706)](https://docs.anthropic.com/en/docs/claude-code)
+[![Codex CLI](https://img.shields.io/badge/codex%20cli-hooks%20%2B%20commands-10A37F)](https://github.com/openai/codex)
+[![Gemini CLI](https://img.shields.io/badge/gemini%20cli-hooks%20%2B%20commands-4285F4)](https://github.com/google-gemini/gemini-cli)
 [![Obsidian](https://img.shields.io/badge/obsidian-1.12%2B-7C3AED)](https://obsidian.md)
-[![Python](https://img.shields.io/badge/python-3.8%2B-3776AB)](https://python.org)
+[![Obsidian CLI](https://img.shields.io/badge/obsidian--cli-integrated-E6E6E6)](https://github.com/kepano/obsidian-cli)
+[![Obsidian Skills](https://img.shields.io/badge/obsidian--skills-integrated-8B5CF6)](https://github.com/kepano/obsidian-skills)
+[![QMD](https://img.shields.io/badge/qmd-semantic%20search-FF6B6B)](https://github.com/tobi/qmd)
+[![Node](https://img.shields.io/badge/node-22%2B-339933)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > **一个让 Claude Code 记住一切的 Obsidian 仓库。** 开始一次会话，聊聊你的一天，Claude 会处理剩下的一切——笔记、链接、索引、绩效追踪。每一次对话都建立在上一次的基础之上。
@@ -20,15 +29,17 @@ Claude Code 功能强大，但它会遗忘。每次会话都从零开始——�
 
 ## 🟢 解决方案
 
-给 Claude 一个大脑。
+给你的 Agent 一个大脑。
 
 ```
 你: "开始会话"
-Claude: *读取北极星目标，检查活跃项目，扫描最近的记忆*
-Claude: "你正在做 Project Alpha，被后端契约阻塞了。
+Agent: *读取北极星目标，检查活跃项目，扫描最近的记忆*
+Agent: "你正在做 Project Alpha，被后端契约阻塞了。
          上次会话你决定拆分协调器。你明天和经理有个
          1:1——Review 简报已经准备好了。"
 ```
+
+通过 `shardmind install` 或 `git clone` 安装 —— 两种方式得到相同的仓库。
 
 ---
 
@@ -87,26 +98,52 @@ Decision: defer Redis migration. Win: Sarah praised the auth architecture.
 
 ## 🚀 快速开始
 
-1. 克隆此仓库（或使用它作为 **GitHub 模板**）
-2. 将文件夹作为 **Obsidian 仓库** 打开
-3. 在 设置 → 通用 中启用 **Obsidian CLI**（需要 Obsidian 1.12+）
-4. 在仓库目录中运行 **`claude`**
-5. 在 **`brain/North Star.md`** 中填写你的目标——这将为每次会话定下基调
-6. 开始谈论工作
+### 📦 通过 ShardMind 安装（推荐）
 
-### 可选：QMD 语义搜索
+```bash
+npm install -g shardmind
+mkdir my-vault && cd my-vault
+shardmind install github:breferrari/obsidian-mind
+```
+
+`shardmind install` 会写入当前目录，因此请先创建并进入一个新文件夹。向导会收集你的姓名、组织、仓库用途、要包含的 Agent，以及是否启用 QMD。post-install 钩子会根据你的答案个性化 `brain/North Star.md`。然后：
+
+1. 将已安装的文件夹作为 **Obsidian 仓库** 打开
+2. 在 设置 → 通用 中启用 **Obsidian CLI**（需要 Obsidian 1.12+）
+3. 在仓库目录中运行你的 Agent：**`claude`**、**`codex`** 或 **`gemini`**
+4. 开始谈论工作
+
+[ShardMind](https://github.com/breferrari/shardmind) 是 Obsidian 仓库模板的包管理器。安装时会添加 `.shardmind/` 旁挂目录，提供向导、可选模块（不需要的可以跳过）和三方合并升级。所有值采用默认值时，安装结果与 `git clone` 字节等价——克隆体验完全保留。从已安装的仓库中删除 `.shardmind/` 和 `shard-values.yaml`，仓库仍可正常工作：ShardMind 是附加功能，并非必需。
+
+### 或直接克隆
+
+```bash
+git clone https://github.com/breferrari/obsidian-mind.git
+```
+
+或将其作为 **GitHub 模板** 使用。跳过向导，获取裸模板。然后按上面的 4 个步骤操作，并在 **`brain/North Star.md`** 中填写你的目标（ShardMind 向导会自动完成此项）。
+
+### 🔍 推荐：QMD 语义搜索
 
 用于在仓库中进行语义搜索（即使笔记标题是 "Redis Migration ADR"，也能找到 "我们关于缓存做了什么决策"）：
 
 ```bash
 npm install -g @tobilu/qmd
-qmd collection add . --name vault --mask "**/*.md"
-qmd context add qmd://vault "Engineer's work vault: projects, decisions, incidents, people, reviews, architecture"
-qmd update && qmd embed
+node --experimental-strip-types scripts/qmd-bootstrap.ts
 ```
 
+引导脚本是幂等的，可以安全地重复运行。它读取 `vault-manifest.json` 中的 `qmd_index` 和 `qmd_context` 字段，注册命名索引并生成嵌入向量（默认索引名：`obsidian-mind`）。SessionStart 钩子、`.mcp.json` 封装脚本和 CLI 命令都读取同一个清单字段，因此同一台机器上的其他 vault 不会与本 vault 的 QMD 数据混淆。CLI 命令始终需要传递 `--index <名称>`：
+
+```bash
+qmd --index obsidian-mind query "我们关于缓存做了什么决策"
+qmd --index obsidian-mind update   # 批量编辑后
+qmd --index obsidian-mind embed    # 大量新笔记后
+```
+
+**通过 MCP 原生集成为 Agent 工具。** 在 `.mcp.json` 中注册为 [Model Context Protocol](https://modelcontextprotocol.io) 服务器——当 QMD 已安装时，`mcp__qmd__query`、`mcp__qmd__get`、`mcp__qmd__multi_get` 会与 Read、Edit 一起出现在 Agent 的工具菜单中。子代理、斜杠命令和主对话都通过同一个带类型的契约进行调用。之后再接入其他 MCP 兼容工具（数据库、工单系统、日历），接入方式完全一致。
+
 > [!NOTE]
-> 如果没有安装 QMD，一切仍然正常运作——Claude 会回退到 Obsidian CLI 和 grep。
+> 如果没有安装 QMD，一切仍然正常运作——Agent 会回退到 Obsidian CLI 和 grep，MCP 服务器条目会以无害的警告被跳过。
 
 ---
 
@@ -114,44 +151,77 @@ qmd update && qmd embed
 
 - [Obsidian](https://obsidian.md) 1.12+（支持 CLI）
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
-- Python 3（用于钩子脚本）
+- [Node 22+ LTS](https://nodejs.org)（用于钩子脚本 — 通常与 Claude Code / Codex / Gemini CLI 一起已安装）
 - Git（用于版本历史）
 - [QMD](https://github.com/tobi/qmd)（可选，用于语义搜索）
+
+> **关于 Node 标志。** 钩子脚本通过 Node 的 `--experimental-strip-types` 标志直接执行 TypeScript。该标志自 Node 22.6+（2024 年 8 月）起稳定，并在 Node 23.6+ 中成为默认行为。虽然被标记为实验性（experimental），但在 22 LTS 和 24 LTS 中行为均未改变。如果未来的 Node 版本废弃或重命名该标志，只需在 `.claude/settings.json`、`.codex/hooks.json` 和 `.gemini/settings.json` 中对钩子命令做一行修改即可。
 
 ---
 
 ## ⚙️ 工作原理
 
-**文件夹按用途组织，链接按含义组织。** 一个笔记存放在一个文件夹中（它的归属），但链接到许多笔记（它的上下文）。Claude 维护这个图谱——自动将工作笔记链接到人员、决策和能力项。当绩效评估季到来时，每个能力项笔记上的反向链接就是现成的证据链。一个没有链接的笔记就是一个 bug。
+**过程化代码负责环境，Agent 负责内容。** `.claude/scripts/` 中的钩子处理分类、验证、索引和生命周期注入——可复现、可测试，对每个 Agent 都以相同方式运行。撰写笔记、归类、链接、起草简报——这些属于判断范畴，交由 Agent 处理。两侧通过小而清晰的交接相遇（钩子注入上下文，Agent 读取仓库），因此双方都不需要越界做对方的工作。
+
+**文件夹按用途组织，链接按含义组织。** 一个笔记存放在一个文件夹中（它的归属），但链接到许多笔记（它的上下文）。Agent 维护这个图谱——自动将工作笔记链接到人员、决策和能力项。当绩效评估季到来时，每个能力项笔记上的反向链接就是现成的证据链。一个没有链接的笔记就是一个 bug。
 
 **仓库优先的记忆** 使上下文能跨会话和设备持续存在。所有持久知识存储在 `brain/` 主题笔记中（git 跟踪、Obsidian 可浏览、相互链接）。Claude Code 的 `MEMORY.md`（`~/.claude/`）是一个自动加载的索引，指向仓库中的位置——本身不存储内容。这意味着记忆可以在更换设备后保留，并且是知识图谱的一部分。
 
 **会话有设计好的生命周期。** `SessionStart` 钩子自动注入你的北极星目标、活跃项目、最近变更、待办任务和完整的仓库文件列表——Claude 每次会话都带着上下文启动，而不是从空白开始。结束时，说 "wrap up"，Claude 就会运行 `/om-wrap-up`——验证笔记、更新索引、发现未记录的成就。285 行的 `CLAUDE.md` 规范了中间的一切：文件归档位置、链接方式、何时拆分笔记、如何处理决策和事件。
 
-### 钩子
+### 🔗 钩子
 
 五个生命周期钩子自动处理路由：
 
 | 钩子 | 触发时机 | 功能 |
 |------|---------|------|
 | 🚀 SessionStart | 启动/恢复时 | QMD 重新索引，注入北极星目标、活跃工作、最近变更、任务、文件列表 |
-| 💬 UserPromptSubmit | 每条消息 | 对内容分类（决策、事件、成就、1:1、架构、人员）并注入路由提示 |
-| ✍️ PostToolUse | 写入 `.md` 后 | 验证 frontmatter、检查 wikilinks、验证文件夹位置 |
+| 💬 UserPromptSubmit | 每条消息 | 对内容分类（决策、事件、成就、1:1、架构、人员、项目更新）并注入路由提示 |
+| ✍️ PostToolUse | 写入 `.md` 后 | 验证 frontmatter、检查 wikilinks |
 | 💾 PreCompact | 上下文压缩前 | 将会话记录备份到 `thinking/session-logs/` |
 | 🏁 Stop | 会话结束时 | 检查清单：归档已完成项目、更新索引、检查孤立笔记 |
 
 > [!TIP]
 > 你只需要正常对话。钩子会处理路由。
 
+### ⚡ Token 效率
+
+obsidian-mind **不会**将整个 vault 加载到上下文中。它使用分层加载来控制 token 成本：
+
+| 层级 | 内容 | 时机 | 成本 |
+|------|------|------|------|
+| **始终** | `CLAUDE.md` + SessionStart 上下文（北极星摘要、git 摘要、任务、vault 文件列表） | 会话启动时 | ~2K tokens |
+| **按需** | QMD 语义搜索结果 | Agent 需要特定上下文时 | 精准定向 |
+| **触发** | 分类路由提示 | 每条消息 | ~100 tokens |
+| **触发** | PostToolUse 验证 | `.md` 写入后 | ~200 tokens |
+| **罕见** | 完整文件读取 | 仅在明确需要时 | 可变 |
+
+SessionStart 加载**轻量级上下文** — 关键文件的简短摘要、文件名和 git 摘要，而非完整笔记内容。Agent 通过 QMD 进行语义搜索后再读取文件，因此只获取相关内容。分类钩子每条消息仅执行一次轻量级 Node 调用。验证钩子仅在 markdown 写入时触发，跳过排除的路径。
+
+### 🌐 与其他 Agent 配合使用
+
+obsidian-mind 支持 Claude Code、Codex CLI 和 Gemini CLI。`CLAUDE.md` 中的 vault 规约、`.claude/scripts/` 中的钩子脚本、`.claude/commands/` 中的 18 个命令都是 Agent 无关的 — 纯 Markdown、TypeScript 和 Shell，无 SDK 依赖。
+
+**Claude Code** — 完整支持。钩子、命令、子代理和记忆系统全部开箱即用。
+
+**Codex CLI** — 原生读取 `AGENTS.md`。`.codex/hooks.json` 中的钩子配置连接了与 Claude Code 相同的钩子脚本 — 会话上下文、消息分类和写入验证自动工作。
+
+**Gemini CLI** — 原生读取 `GEMINI.md`。`.gemini/settings.json` 中的钩子配置将 Gemini 的事件名称映射到共享钩子脚本。
+
+**其他 Agent**（Cursor、Windsurf、GitHub Copilot、JetBrains AI）— 通过 `AGENTS.md` 读取 vault 规约。钩子支持因 Agent 而异。
+
+> [!NOTE]
+> 钩子、命令、子代理提示和 vault 记忆（`brain/`）都是 Agent 无关的。只有 `~/.claude/` 自动记忆加载器是 Claude Code 专属功能。详见 `AGENTS.md`。
+
 ---
 
 ## 📅 日常工作流
 
-**早晨**：运行 `/om-standup`。Claude 加载你的北极星目标、活跃项目、待办任务和最近变更。你会得到一份结构化的摘要和优先事项建议。
+**早晨**：运行 `/om-standup`。Agent 加载你的北极星目标、活跃项目、待办任务和最近变更。你会得到一份结构化的摘要和优先事项建议。
 
-**全天**：自然地交谈。提到你做的决策、发生的事件、刚结束的 1:1、想记住的成就。分类钩子会引导 Claude 将每条信息归档到正确位置。对于更大量的信息转储，使用 `/om-dump` 一次性叙述所有内容。
+**全天**：自然地交谈。提到你做的决策、发生的事件、刚结束的 1:1、想记住的成就。分类钩子会引导 Agent 将每条信息归档到正确位置。对于更大量的信息转储，使用 `/om-dump` 一次性叙述所有内容。
 
-**收工**：说 "wrap up"，Claude 就会调用 `/om-wrap-up`——验证笔记、更新索引、检查链接、发现未记录的成就。
+**收工**：说 "wrap up"，Agent 就会调用 `/om-wrap-up`——验证笔记、更新索引、检查链接、发现未记录的成就。
 
 **每周**：运行 `/om-weekly` 进行跨会话综合——北极星对齐、模式识别、未记录的成就和下周优先事项。运行 `/om-vault-audit` 捕获孤立笔记、断开的链接和过时的内容。
 
@@ -166,7 +236,7 @@ qmd update && qmd embed
 | 命令 | 功能 |
 |------|------|
 | `/om-standup` | 早间启动——加载上下文，回顾昨天，浮现任务，建议优先事项 |
-| `/om-dump` | 自由捕获——随意交谈，Claude 将所有内容路由到正确的笔记 |
+| `/om-dump` | 自由捕获——随意交谈，将所有内容路由到正确的笔记 |
 | `/om-wrap-up` | 完整的会话回顾——验证笔记、索引、链接，提出改进建议 |
 | `/om-humanize` | 语气校准编辑——让 Claude 起草的文字听起来像是你自己写的 |
 | `/om-weekly` | 每周综合——跨会话模式、北极星对齐、未记录的成就 |
@@ -245,8 +315,11 @@ qmd update && qmd embed
 
 ```
 Home.md                 仓库入口——嵌入的 Base 视图、快捷链接
-CLAUDE.md               操作手册——Claude 每次会话都会读取
+CLAUDE.md               操作手册——Agent 每次会话都会读取
+AGENTS.md               多 Agent 指南——Codex、Cursor、Windsurf 等
+GEMINI.md               多 Agent 指南——Gemini CLI
 vault-manifest.json     模板元数据——版本、结构、schema
+.shardmindignore        从 `shardmind install` 中排除的文件（CONTRIBUTING、翻译、营销素材）
 CHANGELOG.md            版本历史
 CONTRIBUTING.md         模板开发清单
 README.md               产品文档
@@ -288,10 +361,18 @@ templates/              带有 YAML frontmatter 的 Obsidian 模板
 .claude/
   commands/             18 个斜杠命令
   agents/               9 个子代理
-  scripts/              钩子脚本 + charcount.sh 工具
+  scripts/              钩子脚本 + charcount.ts 工具
   skills/               Obsidian + QMD 技能
   settings.json         5 个钩子配置
+
+.shardmind/             ShardMind 旁挂目录——仅在通过 `shardmind install` 安装时使用
+  shard.yaml            清单文件（名称、版本、模块、钩子）
+  shard-schema.yaml     向导值 + 模块门控
+  hooks/                post-install（QMD 引导 + 个性化）、post-update
 ```
+
+> [!NOTE]
+> `.shardmind/` 是**附加功能，并非必需。** 克隆并打开的仓库从不读取它；只有 `shardmind` CLI 使用它。删除它，仓库仍可正常工作。v6 布局契约见 [shardmind/docs/SHARD-LAYOUT.md](https://github.com/breferrari/shardmind/blob/main/docs/SHARD-LAYOUT.md)。
 
 ---
 
@@ -310,7 +391,7 @@ templates/              带有 YAML frontmatter 的 Obsidian 模板
 
 ## 🔧 包含内容
 
-### Obsidian Skills
+### 🧩 Obsidian Skills
 
 [kepano/obsidian-skills](https://github.com/kepano/obsidian-skills) 预装在 `.claude/skills/` 中：
 
@@ -320,7 +401,7 @@ templates/              带有 YAML frontmatter 的 Obsidian 模板
 - **json-canvas** — 可视化 `.canvas` 文件创建
 - **defuddle** — 网页到 Markdown 的提取
 
-### QMD Skill
+### 🔍 QMD Skill
 
 `.claude/skills/qmd/` 中的自定义技能，教会 Claude 主动使用 [QMD](https://github.com/tobi/qmd) 语义搜索——在读取文件之前、在创建笔记之前（检查重复）以及在创建笔记之后（查找应该链接到它的相关内容）。
 
@@ -340,27 +421,73 @@ templates/              带有 YAML frontmatter 的 Obsidian 模板
 | 你的领域 | 添加文件夹、在 `.claude/agents/` 中添加子代理，或在 `.claude/scripts/` 中添加分类规则 |
 
 > [!IMPORTANT]
-> `CLAUDE.md` 是操作手册。当你改变规范时，请同步更新它——Claude 每次会话都会读取它。
+> `CLAUDE.md` 是操作手册。当你改变规范时，请同步更新它——Agent 每次会话都会读取它。
 
 ---
 
 ## 🔄 升级
 
-已经在使用旧版本的 obsidian-mind（或其他 Obsidian 仓库）？`/om-vault-upgrade` 命令可以将你的内容迁移到最新模板：
+### 让 Agent 帮你更新
+
+最简单的方法 — 直接告诉你的 Agent：
+
+```
+把这个 vault 更新到最新的 obsidian-mind https://github.com/breferrari/obsidian-mind
+```
+
+Agent 会拉取最新更改、解决冲突并更新基础设施文件。Claude Code、Codex CLI 和 Gemini CLI 均可使用。
+
+### 更新已有克隆
+
+如果你直接克隆了仓库：
+
+```bash
+cd your-vault
+git pull origin main
+```
+
+新文件（`AGENTS.md`、`GEMINI.md`、`.codex/`、`.gemini/`）会自动出现，钩子脚本也会就地更新。
+
+### 更新 Fork
+
+如果你 Fork 了仓库：
+
+```bash
+git remote add upstream https://github.com/breferrari/obsidian-mind.git
+git fetch upstream
+git merge upstream/main
+```
+
+解决你自定义过的文件的冲突（通常是 `CLAUDE.md`、`brain/` 笔记）。基础设施文件（`.claude/scripts/`、`.codex/`、`.gemini/`）应该可以干净合并。
+
+### 将已有克隆收编到 ShardMind（v5.x → v6）
+
+已经克隆了 obsidian-mind，又想要向导、可选模块和三方合并升级，且不希望丢失自定义内容？`shardmind adopt` 会将你已有的仓库整合为受管的 v6 安装——保留你的每一字节编辑，仅添加 `.shardmind/` 旁挂目录和 `shard-values.yaml`：
+
+```bash
+npm install -g shardmind
+shardmind adopt github:breferrari/obsidian-mind
+```
+
+2-way diff UI 会引导你查看本地变更，按文件确认要保留的内容，然后写入引擎元数据。结果：你已有的内容完好保留的 v6 受管仓库，从此可以使用 `shardmind update`。无需重新克隆。
+
+### 从旧仓库（或任何其他仓库）迁移
+
+使用 v5 之前的 obsidian-mind，或要从完全不同的 Obsidian 仓库迁移？`/om-vault-upgrade` 命令可以将你的内容迁移到最新模板：
 
 ```bash
 # 1. 克隆最新版 obsidian-mind
 git clone https://github.com/breferrari/obsidian-mind.git ~/new-vault
 
-# 2. 在 Claude Code 中打开
-cd ~/new-vault && claude
+# 2. 用你的 Agent 打开
+cd ~/new-vault && claude   # 或 codex、gemini
 
 # 3. 运行升级命令，指向你的旧仓库
 /om-vault-upgrade ~/my-old-vault
 ```
 
-Claude 将会：
-1. **检测** 你的仓库版本（v1–v3.2，或识别为非 obsidian-mind 仓库）
+Agent 将会：
+1. **检测** 你的仓库版本（v1–v3.x，或识别为非 obsidian-mind 仓库）
 2. **盘点** 每个文件——分类为用户内容、脚手架、基础设施或未分类
 3. **展示迁移计划**——你可以确切看到哪些内容将被复制、转换和跳过
 4. **经你批准后执行**——转换 frontmatter、修复 wikilinks、重建索引
@@ -369,7 +496,13 @@ Claude 将会：
 你的旧仓库**永远不会被修改**。使用 `--dry-run` 可以预览计划而不执行。
 
 > [!NOTE]
-> 适用于任何 Obsidian 仓库，不仅限于 obsidian-mind。对于非 obsidian-mind 仓库，Claude 会读取每个笔记并进行语义分类——将工作笔记、人员、事件、1:1 和决策路由到正确的文件夹。
+> 适用于任何 Obsidian 仓库，不仅限于 obsidian-mind。对于非 obsidian-mind 仓库，Agent 会读取每个笔记并进行语义分类——将工作笔记、人员、事件、1:1 和决策路由到正确的文件夹。
+
+---
+
+## 🗺️ 路线图
+
+**欢迎贡献。** 对于超过单文件的改动，请先创建 Issue。特别是涉及 Hook、安装流程或运行环境要求的改动。可以避免你做出无法合并的工作。
 
 ---
 
