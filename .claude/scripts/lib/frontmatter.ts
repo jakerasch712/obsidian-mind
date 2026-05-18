@@ -26,14 +26,23 @@ const SKIP_PATH_SEGMENTS: readonly string[] = [
 	"thinking/",
 ];
 
+// Vault root — only validate files that live inside this directory.
+// Resolved from this script's location: .claude/scripts/lib/ → three levels up.
+const VAULT_ROOT = new URL("../../../", import.meta.url).pathname;
+
 /**
  * Return true if the file should be skipped (not validated).
- * Skips non-markdown, dotfiles, templates, root docs, and translated READMEs.
+ * Skips non-markdown, dotfiles, templates, root docs, translated READMEs,
+ * and any file that lives outside the vault root.
  */
 export function shouldSkipFile(filePath: string): boolean {
 	if (!filePath || !filePath.endsWith(".md")) return true;
 
 	const normalized = filePath.replaceAll("\\", "/");
+
+	// Skip anything outside the vault root entirely.
+	if (!normalized.startsWith(VAULT_ROOT)) return true;
+
 	const base = basename(normalized);
 
 	if (ROOT_FILES.has(base)) return true;
