@@ -12,6 +12,9 @@ import { basename } from "node:path";
 import { debug, readStdinJson, writeHookOutput } from "./lib/hook-io.ts";
 import { shouldSkipFile, validateFile } from "./lib/frontmatter.ts";
 
+// Vault root — resolved from this script's location: .claude/scripts/ → two levels up.
+const VAULT_ROOT = new URL("../../", import.meta.url).pathname;
+
 type HookInput = {
 	readonly tool_input?: unknown;
 	readonly hook_event_name?: unknown;
@@ -35,7 +38,7 @@ if (typeof filePath !== "string" || !filePath) {
 	process.exit(0);
 }
 
-if (shouldSkipFile(filePath)) {
+if (shouldSkipFile(filePath, VAULT_ROOT)) {
 	debug(`validate: skipped ${filePath}`);
 	process.exit(0);
 }
