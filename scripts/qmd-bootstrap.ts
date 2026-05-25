@@ -33,6 +33,11 @@ import { readFileSync } from "node:fs";
 
 import { warn } from "../.claude/scripts/lib/hook-io.ts";
 import { isMainModule } from "../.claude/scripts/lib/main-guard.ts";
+import {
+	buildCollectionAddArgs,
+	isContextRemoveBenign,
+	makeCollectionAddBenignMatcher,
+} from "../.claude/scripts/lib/qmd-bootstrap.ts";
 import { buildQmdCommand, resolveQmdEntry } from "../.claude/scripts/lib/qmd.ts";
 import {
 	qmdConfigPath,
@@ -181,6 +186,19 @@ function main(): void {
 	ensureQmd(entry);
 
 	const collectionName = manifest.template ?? index;
+	// The collection name ends up as a YAML key, a `qmd://` URL segment, and a
+	// SQL identifier inside qmd's store. Same character class as `qmd_index`
+	// so a typo'd `template` field can't land an unparseable identifier.
+	// (`qmd_index` was validated above, so a failure here can only come from
+	// `template`.)
+	if (!isValidQmdIndex(collectionName)) {
+		process.stderr.write(
+			`vault-manifest.json \`template\` field value ${JSON.stringify(collectionName)} ` +
+				"is not a valid qmd identifier.\n" +
+				"Allowed: alphanumerics, dot, dash, underscore; must start with an alphanumeric.\n",
+		);
+		process.exit(1);
+	}
 	const contextPath = `qmd://${collectionName}/`;
 	const contextText =
 		manifest.qmd_context ??
@@ -188,38 +206,33 @@ function main(): void {
 
 	process.stdout.write(`→ Bootstrapping QMD index '${index}'\n`);
 
-	// `collection add` fails with a specific message when the collection is
-	// already registered — that's the idempotent case we expect on re-run.
-	// Any other failure (invalid pattern, permissions, qmd install drift) is
-	// surfaced as a warning so it isn't silently masked.
+	// Re-runs are idempotent (matcher recognises the by-name "already exists"
+	// case); a path-collision warning is intentionally NOT swallowed.
 	runIdempotent(
 		entry,
-		[
-			"--index",
-			index,
-			"collection",
-			"add",
-			".",
-			collectionName,
-			"--pattern",
-			"**/*.md",
-		],
-		`Registering collection '${collectionName}' (pattern **/*.md)`,
-		(o) => /already exists/i.test(o.stderr) || /already exists/i.test(o.stdout),
+		buildCollectionAddArgs(index, collectionName),
+		`Registering collection '${collectionName}' (mask **/*.md)`,
+		makeCollectionAddBenignMatcher(collectionName),
+	);
+
+	// Round-trip the registration: if a future qmd CLI change silently breaks
+	// our argv shape, this is where we find out — `collection show` exits 1
+	// with "Collection not found: <name>" rather than running past the issue.
+	run(
+		entry,
+		["--index", index, "collection", "show", collectionName],
+		`Verifying collection '${collectionName}' is registered`,
 	);
 
 	// Re-attach the context string so edits to vault-manifest.json propagate.
 	// On first run, `context rm` fails because the row doesn't exist — that's
-	// the expected benign case. Unexpected failures (auth, IO) get warned.
+	// the expected benign case. Any other failure (including a genuine
+	// "Collection not found") is intentionally NOT swallowed.
 	runIdempotent(
 		entry,
 		["--index", index, "context", "rm", contextPath],
 		"Clearing previous context (if any)",
-		(o) =>
-			/not found/i.test(o.stderr) ||
-			/not found/i.test(o.stdout) ||
-			/does not exist/i.test(o.stderr) ||
-			/does not exist/i.test(o.stdout),
+		isContextRemoveBenign,
 	);
 	run(
 		entry,

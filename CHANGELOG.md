@@ -5,6 +5,18 @@
 
 
 
+
+## v6.1 — 2026-05-18
+
+### Changed
+- surface macOS Obsidian CLI flicker caveat; refresh defuddle skill
+
+### Fixed
+- extend isMarkdownFilename across remaining session-start call sites
+- align qmd-bootstrap context-rm matcher with qmd's actual output
+- stop qmd-bootstrap from mis-naming the collection on stock Windows
+- stop SessionStart from flashing Obsidian app on macOS, close ExperimentalWarning stderr leak (#83)
+
 ## v6.0 — 2026-04-26
 
 ### Added

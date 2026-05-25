@@ -3,8 +3,9 @@
  * SessionStart hook — inject vault context into the agent's first turn.
  *
  * Emits a markdown block on stdout with: date header, North Star excerpt,
- * recent git changes (last 48h), open tasks (via Obsidian CLI if available),
- * active work listing, and a full vault markdown file listing.
+ * brain-topics index, recent git changes (last 48h), open tasks aggregated
+ * from work/active/ and the vault root, active work listing, and a full
+ * vault markdown file listing.
  *
  * Also persists VAULT_PATH to CLAUDE_ENV_FILE when Claude Code provides it.
  */
@@ -15,7 +16,8 @@ import {
 	readdirSync,
 	type Dirent,
 } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	take,
@@ -29,6 +31,10 @@ import {
 	hasBrainContent,
 	parseQmdIndex,
 	qmdArgsWithIndex,
+	parseInfraRootFilenames,
+	isInfraFilename,
+	isMarkdownFilename,
+	collectOpenTasks,
 } from "./lib/session-start.ts";
 import { buildQmdCommand, resolveQmdEntry } from "./lib/qmd.ts";
 
@@ -57,24 +63,43 @@ if (envFile) {
 	}
 }
 
-// Incremental QMD re-index. Fire-and-forget; ignore failures (qmd is optional).
-// Scope to this vault's named index when the manifest declares one, so vaults
-// sharing a machine don't blend results in QMD's default global index. Falls
-// back silently for forks that haven't adopted the `qmd_index` manifest field.
-//
-// Route through `buildQmdCommand` so the same shim-bypass logic that fixes
-// the MCP wrapper applies here too — `node qmd.js update` runs identically
-// on Windows, macOS, and Linux; no platform conditionals.
-const qmdIndex = parseQmdIndex(readManifestRaw());
+// Manifest is read once and reused: QMD's named index, the infrastructure
+// allowlist for openTasks(), and any future manifest-driven sections all
+// derive from the same source. Both helpers tolerate a null source so a
+// missing/malformed manifest degrades quietly.
+const manifestJson = readManifestRaw();
+const infraRootFilenames = parseInfraRootFilenames(manifestJson);
+
+// Incremental QMD re-index. Truly fire-and-forget: detached, unref'd,
+// ignore-all-streams. The hook's own work (file walks, git log, context
+// emission) is independent of this index update, so blocking on qmd's
+// startup (notably slow on Windows × Node 24 cold start, where it can
+// approach 10s before the actual update work begins) is wasted user
+// latency. Scope to this vault's named index when the manifest declares
+// one; fall back silently for forks that haven't adopted `qmd_index`.
+// Route through `buildQmdCommand` so the shim-bypass logic that fixes
+// the MCP wrapper applies here too.
+const qmdIndex = parseQmdIndex(manifestJson);
 const qmdUpdate = buildQmdCommand(
 	resolveQmdEntry(),
 	qmdArgsWithIndex(qmdIndex, ["update"]),
 );
-spawnSync(qmdUpdate.cmd, qmdUpdate.args as string[], {
+// `cwd: tmpdir()` keeps the detached child from holding the vault dir as
+// its working directory. `qmd update --index <name>` reads collection
+// paths from YAML, so cwd is irrelevant to the work; pinning it to the OS
+// tmpdir means `rm -rf` of the vault (or a test cleanup) never races a
+// stale qmd handle on Windows.
+const qmdChild = spawn(qmdUpdate.cmd, qmdUpdate.args as string[], {
 	stdio: "ignore",
-	timeout: 30_000,
 	shell: qmdUpdate.shell,
+	detached: true,
+	windowsHide: true,
+	cwd: tmpdir(),
 });
+// Silence the spawn-error event so a missing qmd doesn't crash the hook;
+// qmd is optional and the hook already degrades when it's not installed.
+qmdChild.on("error", () => undefined);
+qmdChild.unref();
 
 type CmdResult =
 	| { readonly kind: "ok"; readonly stdout: string }
@@ -102,9 +127,9 @@ function runCmd(
 
 
 function northStar(): string {
-	// Prefer Obsidian CLI when available (authoritative for wikilink resolution)
-	const cli = runCmd("obsidian", ["read", "file=North Star"]);
-	if (cli.kind === "ok") return take(cli.stdout, 30);
+	// Filesystem-only: the path is fixed by template convention, so there's no
+	// wikilink-resolution value worth a CLI hop — and `spawnSync("obsidian", …)`
+	// launches the Electron app on macOS when no instance is running (#83).
 	try {
 		return take(readFileSync("brain/North Star.md", { encoding: "utf-8" }), 30);
 	} catch {
@@ -123,11 +148,53 @@ function recentChanges(): string {
 	return formatRecentChanges(r.stdout, 15);
 }
 
+function readMarkdownSource(
+	path: string,
+): { path: string; content: string } | null {
+	try {
+		return { path, content: readFileSync(path, { encoding: "utf-8" }) };
+	} catch {
+		return null;
+	}
+}
+
+function listMarkdownSources(
+	dir: string,
+	pathFor: (name: string) => string,
+	skip: (name: string) => boolean = () => false,
+): { path: string; content: string }[] {
+	let entries: Dirent[];
+	try {
+		entries = readdirSync(dir, { withFileTypes: true });
+	} catch {
+		return [];
+	}
+	const sources: { path: string; content: string }[] = [];
+	for (const e of entries) {
+		if (!e.isFile() || !isMarkdownFilename(e.name) || skip(e.name)) continue;
+		const src = readMarkdownSource(pathFor(e.name));
+		if (src !== null) sources.push(src);
+	}
+	return sources;
+}
+
 function openTasks(): string {
-	const r = runCmd("obsidian", ["tasks", "daily", "todo"]);
-	if (r.kind === "missing") return "(Obsidian CLI not available)";
-	if (r.kind === "failed") return "(CLI timed out)";
-	return take(r.stdout, 10);
+	// Filesystem scan, not `obsidian tasks daily todo` (#83 — that CLI flashes
+	// the Electron app on macOS). Order matters: project tasks in work/active/
+	// surface first, then vault-root notes (which is where daily notes live by
+	// Obsidian's default — empirically the dominant task store in user vaults).
+	// Infra files (CLAUDE.md, README.*.md, …) are excluded so the section is
+	// user content only. Paths use forward slashes so the output reads the same
+	// in Claude's context on any OS.
+	const sources = [
+		...listMarkdownSources("work/active", (name) => `work/active/${name}`),
+		...listMarkdownSources(
+			".",
+			(name) => name,
+			(name) => isInfraFilename(name, infraRootFilenames),
+		),
+	];
+	return collectOpenTasks(sources, 10);
 }
 
 function brainIndex(): string {
@@ -138,11 +205,11 @@ function brainIndex(): string {
 		return "(none)";
 	}
 	const files = entries
-		.filter((e) => e.isFile() && e.name.endsWith(".md"))
+		.filter((e) => e.isFile() && isMarkdownFilename(e.name))
 		.map((e) => e.name)
 		.sort();
 	const parsed = files.map((f) => {
-		const name = f.replace(/\.md$/, "");
+		const name = f.replace(/\.md$/i, "");
 		let description: string | null = null;
 		let hasContent = false;
 		try {
@@ -188,7 +255,7 @@ function listMd(): string[] {
 			const full = dir === "." ? e.name : join(dir, e.name);
 			if (isSkippedPath(full, SKIP_PREFIXES)) continue;
 			if (e.isDirectory()) walk(full);
-			else if (e.isFile() && e.name.endsWith(".md")) results.push(`./${full}`);
+			else if (e.isFile() && isMarkdownFilename(e.name)) results.push(`./${full}`);
 		}
 	}
 	walk(".");
