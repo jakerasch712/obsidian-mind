@@ -12,8 +12,12 @@ import { basename } from "node:path";
 import { debug, readStdinJson, writeHookOutput } from "./lib/hook-io.ts";
 import { shouldSkipFile, validateFile } from "./lib/frontmatter.ts";
 
-// Vault root — resolved from this script's location: .claude/scripts/ → two levels up.
-const VAULT_ROOT = new URL("../../", import.meta.url).pathname;
+// Only enforce the vault-root guard when Claude Code provides the project directory.
+// In test runs and CI this env var is absent, so the guard is disabled and temp
+// files written by integration tests are validated as expected.
+const VAULT_ROOT = process.env.CLAUDE_PROJECT_DIR
+	? process.env.CLAUDE_PROJECT_DIR.replace(/\/$/, "") + "/"
+	: undefined;
 
 type HookInput = {
 	readonly tool_input?: unknown;
