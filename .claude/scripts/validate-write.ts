@@ -12,6 +12,13 @@ import { basename } from "node:path";
 import { debug, readStdinJson, writeHookOutput } from "./lib/hook-io.ts";
 import { shouldSkipFile, validateFile } from "./lib/frontmatter.ts";
 
+// Only enforce the vault-root guard when Claude Code provides the project directory.
+// In test runs and CI this env var is absent, so the guard is disabled and temp
+// files written by integration tests are validated as expected.
+const VAULT_ROOT = process.env.CLAUDE_PROJECT_DIR
+	? process.env.CLAUDE_PROJECT_DIR.replace(/\/$/, "") + "/"
+	: undefined;
+
 type HookInput = {
 	readonly tool_input?: unknown;
 	readonly hook_event_name?: unknown;
@@ -35,7 +42,7 @@ if (typeof filePath !== "string" || !filePath) {
 	process.exit(0);
 }
 
-if (shouldSkipFile(filePath)) {
+if (shouldSkipFile(filePath, VAULT_ROOT)) {
 	debug(`validate: skipped ${filePath}`);
 	process.exit(0);
 }
