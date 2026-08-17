@@ -37,7 +37,8 @@ export function shouldSkipFile(filePath: string, vaultRoot?: string): boolean {
 	const normalized = filePath.replaceAll("\\", "/");
 
 	// Skip anything outside the vault root — only enforced when caller provides it.
-	if (vaultRoot && !normalized.startsWith(vaultRoot)) return true;
+	// Normalize vaultRoot separators so Windows paths compare correctly.
+	if (vaultRoot && !normalized.startsWith(vaultRoot.replaceAll("\\", "/"))) return true;
 
 	const base = basename(normalized);
 
